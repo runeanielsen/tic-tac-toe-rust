@@ -47,7 +47,7 @@ fn parse_player_move(player_move: &str) -> Result<[usize; 2], PlayerMoveError> {
         }
     }
 
-    let x = match positions[0].chars().nth(0).unwrap().to_digit(10) {
+    let x = match positions[0].chars().next().unwrap().to_digit(10) {
         Some(n) => n,
         None => {
             return Err(PlayerMoveError::InvalidFormat(String::from(
@@ -56,7 +56,7 @@ fn parse_player_move(player_move: &str) -> Result<[usize; 2], PlayerMoveError> {
         }
     };
 
-    let y = match positions[1].chars().nth(0).unwrap().to_digit(10) {
+    let y = match positions[1].chars().next().unwrap().to_digit(10) {
         Some(n) => n,
         None => {
             return Err(PlayerMoveError::InvalidFormat(String::from(
