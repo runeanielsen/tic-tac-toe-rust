@@ -127,7 +127,7 @@ fn find_winner(board: [[BoardSymbol; 3]; 3]) -> Option<BoardSymbol> {
     }
 
     // Right to left winner
-    if board[0][2] != BoardSymbol::Empty && board[1][1] == board[1][1] && board[0][2] == board[2][0]
+    if board[0][2] != BoardSymbol::Empty && board[0][2] == board[1][1] && board[0][2] == board[2][0]
     {
         winner = board[0][2];
     }
