@@ -245,13 +245,10 @@ mod tests {
         let invalid_moves = [",1", "2,", "30", "sdfss,sfsdfs", "a,b", ""];
 
         for invalid_move in invalid_moves {
-            match parse_player_move(invalid_move) {
-                Ok(_) => assert!(false),
-                Err(err) => match err {
-                    PlayerMoveError::InvalidFormat(_) => assert!(true),
-                    _ => assert!(false),
-                },
-            };
+            assert_eq!(
+                parse_player_move(invalid_move),
+                Err(PlayerMoveError::InvalidFormat("Invalid format".to_string()))
+            );
         }
     }
 
@@ -308,49 +305,27 @@ mod tests {
         let mut board = [[BoardSymbol::Empty; 3]; 3];
         board[1][1] = BoardSymbol::Plus;
 
-        match is_valid_move([1, 1], board) {
-            Ok(_) => assert!(false),
-            Err(error) => match error {
-                PlayerMoveError::FilledPosition(_) => assert!(true),
-                _ => assert!(false),
-            },
-        }
+        assert_eq!(
+            is_valid_move([1, 1], board),
+            Err(PlayerMoveError::FilledPosition(String::from(
+                "The position is already filled."
+            )))
+        );
     }
 
     #[test]
     fn invalid_player_move_outside_bounds() {
         let board = [[BoardSymbol::Empty; 3]; 3];
 
-        match is_valid_move([1, 3], board) {
-            Ok(_) => assert!(false),
-            Err(error) => match error {
-                PlayerMoveError::OutsideBoard(_) => assert!(true),
-                _ => assert!(false),
-            },
-        }
+        let invalid_moves = [[1, 3], [3, 1], [5, 5], [100, 100]];
 
-        match is_valid_move([3, 1], board) {
-            Ok(_) => assert!(false),
-            Err(error) => match error {
-                PlayerMoveError::OutsideBoard(_) => assert!(true),
-                _ => assert!(false),
-            },
-        }
-
-        match is_valid_move([5, 5], board) {
-            Ok(_) => assert!(false),
-            Err(error) => match error {
-                PlayerMoveError::OutsideBoard(_) => assert!(true),
-                _ => assert!(false),
-            },
-        }
-
-        match is_valid_move([100, 100], board) {
-            Ok(_) => assert!(false),
-            Err(error) => match error {
-                PlayerMoveError::OutsideBoard(_) => assert!(true),
-                _ => assert!(false),
-            },
+        for invalid_move in invalid_moves {
+            assert_eq!(
+                is_valid_move(invalid_move, board),
+                Err(PlayerMoveError::OutsideBoard(
+                    "The move is invalid because it is outside the board.".to_string()
+                ))
+            );
         }
     }
 
@@ -371,20 +346,9 @@ mod tests {
         third_row_filled[2][1] = BoardSymbol::Plus;
         third_row_filled[2][2] = BoardSymbol::Plus;
 
-        match find_winner(first_row_filled) {
-            Some(winner) => assert_eq!(BoardSymbol::Circle, winner),
-            None => assert!(false),
-        }
-
-        match find_winner(second_row_filled) {
-            Some(winner) => assert_eq!(BoardSymbol::Plus, winner),
-            None => assert!(false),
-        }
-
-        match find_winner(third_row_filled) {
-            Some(winner) => assert_eq!(BoardSymbol::Plus, winner),
-            None => assert!(false),
-        }
+        assert_eq!(find_winner(first_row_filled).unwrap(), BoardSymbol::Circle);
+        assert_eq!(find_winner(second_row_filled).unwrap(), BoardSymbol::Plus);
+        assert_eq!(find_winner(third_row_filled).unwrap(), BoardSymbol::Plus);
     }
 
     #[test]
@@ -404,20 +368,20 @@ mod tests {
         third_column_filled[1][2] = BoardSymbol::Circle;
         third_column_filled[2][2] = BoardSymbol::Circle;
 
-        match find_winner(first_column_filled) {
-            Some(winner) => assert_eq!(BoardSymbol::Circle, winner),
-            None => assert!(false),
-        }
+        assert_eq!(
+            find_winner(first_column_filled).unwrap(),
+            BoardSymbol::Circle
+        );
 
-        match find_winner(second_column_filled) {
-            Some(winner) => assert_eq!(BoardSymbol::Plus, winner),
-            None => assert!(false),
-        }
+        assert_eq!(
+            find_winner(second_column_filled).unwrap(),
+            BoardSymbol::Plus
+        );
 
-        match find_winner(third_column_filled) {
-            Some(winner) => assert_eq!(BoardSymbol::Circle, winner),
-            None => assert!(false),
-        }
+        assert_eq!(
+            find_winner(third_column_filled).unwrap(),
+            BoardSymbol::Circle
+        );
     }
 
     #[test]
@@ -427,10 +391,10 @@ mod tests {
         left_to_right_board[1][1] = BoardSymbol::Circle;
         left_to_right_board[2][2] = BoardSymbol::Circle;
 
-        match find_winner(left_to_right_board) {
-            Some(winner) => assert_eq!(BoardSymbol::Circle, winner),
-            None => assert!(false),
-        }
+        assert_eq!(
+            find_winner(left_to_right_board).unwrap(),
+            BoardSymbol::Circle
+        );
     }
 
     #[test]
@@ -440,9 +404,6 @@ mod tests {
         left_to_right_board[1][1] = BoardSymbol::Plus;
         left_to_right_board[2][0] = BoardSymbol::Plus;
 
-        match find_winner(left_to_right_board) {
-            Some(winner) => assert_eq!(BoardSymbol::Plus, winner),
-            None => assert!(false),
-        }
+        assert_eq!(find_winner(left_to_right_board).unwrap(), BoardSymbol::Plus);
     }
 }
