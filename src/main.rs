@@ -39,7 +39,7 @@ fn parse_player_move(player_move: &str) -> Result<[usize; 2], PlayerMoveError> {
         )));
     }
 
-    for position in positions.iter() {
+    for position in &positions {
         if position.len() != 1 {
             return Err(PlayerMoveError::InvalidFormat(String::from(
                 "Invalid format",
