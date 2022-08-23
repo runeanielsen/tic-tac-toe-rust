@@ -152,7 +152,9 @@ fn start_game() {
         let player = match player_turn {
             BoardSymbol::Plus => "Player 1",
             BoardSymbol::Circle => "Player 2",
-            _ => panic!("Invalid player turn."),
+            BoardSymbol::Empty => {
+                panic!("Empty is not a valid player turn. Something is not right.")
+            }
         };
 
         println!("{}, please do your move.", player);
@@ -176,15 +178,13 @@ fn start_game() {
         match is_valid_move(player_move, board) {
             Ok(_) => {}
             Err(err) => match err {
-                PlayerMoveError::FilledPosition(msg) => {
+                PlayerMoveError::FilledPosition(msg) | PlayerMoveError::OutsideBoard(msg) => {
                     eprintln!("{} {} please try again!", msg, player);
                     continue;
                 }
-                PlayerMoveError::OutsideBoard(msg) => {
-                    eprintln!("{} {} please try again!", msg, player);
-                    continue;
+                PlayerMoveError::InvalidFormat(_) => {
+                    panic!("Invalid format should not be possible here.")
                 }
-                _ => panic!("Unhandled error."),
             },
         };
 
@@ -201,7 +201,7 @@ fn start_game() {
         player_turn = match player_turn {
             BoardSymbol::Plus => BoardSymbol::Circle,
             BoardSymbol::Circle => BoardSymbol::Plus,
-            _ => panic!("Invalid player turn. Something is wrong."),
+            BoardSymbol::Empty => panic!("Invalid player turn. Something is wrong."),
         }
     }
 }
