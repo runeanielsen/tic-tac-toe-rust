@@ -31,7 +31,7 @@ fn board_presentation(board: [[BoardSymbol; 3]; 3]) -> String {
 }
 
 fn parse_player_move(player_move: String) -> Result<[usize; 2], PlayerMoveError> {
-    let positions = player_move.split(',').map(|x| x.trim()).collect::<Vec<_>>();
+    let positions = player_move.split(',').map(str::trim).collect::<Vec<_>>();
 
     if positions.len() != 2 {
         return Err(PlayerMoveError::InvalidFormat(String::from(
