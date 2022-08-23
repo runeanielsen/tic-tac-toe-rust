@@ -30,7 +30,7 @@ fn board_presentation(board: [[BoardSymbol; 3]; 3]) -> String {
         .join("\n")
 }
 
-fn parse_player_move(player_move: String) -> Result<[usize; 2], PlayerMoveError> {
+fn parse_player_move(player_move: &str) -> Result<[usize; 2], PlayerMoveError> {
     let positions = player_move.split(',').map(str::trim).collect::<Vec<_>>();
 
     if positions.len() != 2 {
@@ -162,7 +162,7 @@ fn start_game() {
             .read_line(&mut player_input)
             .expect("Failed to read line.");
 
-        let player_move = match parse_player_move(player_input) {
+        let player_move = match parse_player_move(&player_input) {
             Ok(parsed_move) => parsed_move,
             Err(error) => match error {
                 PlayerMoveError::InvalidFormat(x) => {
@@ -184,7 +184,6 @@ fn start_game() {
                     eprintln!("{} {} please try again!", msg, player);
                     continue;
                 }
-
                 _ => panic!("Unhandled error."),
             },
         };
@@ -237,10 +236,7 @@ mod tests {
         ];
 
         for (player_move, expected) in valid_moves {
-            assert_eq!(
-                parse_player_move(String::from(player_move)).unwrap(),
-                expected
-            );
+            assert_eq!(parse_player_move(player_move).unwrap(), expected);
         }
     }
 
@@ -249,7 +245,7 @@ mod tests {
         let invalid_moves = [",1", "2,", "30", "sdfss,sfsdfs", "a,b", ""];
 
         for invalid_move in invalid_moves {
-            match parse_player_move(String::from(invalid_move)) {
+            match parse_player_move(invalid_move) {
                 Ok(_) => assert!(false),
                 Err(err) => match err {
                     PlayerMoveError::InvalidFormat(_) => assert!(true),
