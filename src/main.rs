@@ -190,12 +190,9 @@ fn start_game() {
 
         board = place_on_board(player_turn, player_move, board);
 
-        match find_winner(board) {
-            Some(_) => {
-                println!("The winner is: {}", player);
-                break;
-            }
-            None => {}
+        if find_winner(board).is_some() {
+            println!("The winner is: {}", player);
+            break;
         }
 
         player_turn = match player_turn {
