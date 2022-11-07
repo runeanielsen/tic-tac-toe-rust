@@ -183,7 +183,7 @@ fn start_game() {
                     continue;
                 }
                 PlayerMoveError::InvalidFormat(_) => {
-                    panic!("Invalid format should not be possible here.")
+                    panic!("Invalid format.")
                 }
             },
         };
@@ -201,7 +201,7 @@ fn start_game() {
         player_turn = match player_turn {
             BoardSymbol::Plus => BoardSymbol::Circle,
             BoardSymbol::Circle => BoardSymbol::Plus,
-            BoardSymbol::Empty => panic!("Invalid player turn. Something is wrong."),
+            BoardSymbol::Empty => panic!("Invalid player turn."),
         }
     }
 }
