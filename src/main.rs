@@ -1,5 +1,6 @@
 #![warn(clippy::all, clippy::pedantic)]
 
+use std::convert::Into;
 use std::io;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -16,19 +17,19 @@ enum PlayerMoveError {
     OutsideBoard(String),
 }
 
-impl From<BoardSymbol> for String {
+impl From<BoardSymbol> for &str {
     fn from(val: BoardSymbol) -> Self {
         match val {
-            BoardSymbol::Empty => String::from("-"),
-            BoardSymbol::Plus => String::from("+"),
-            BoardSymbol::Circle => String::from("o"),
+            BoardSymbol::Empty => "-",
+            BoardSymbol::Plus => "+",
+            BoardSymbol::Circle => "o",
         }
     }
 }
 
 fn board_presentation(board: [[BoardSymbol; 3]; 3]) -> String {
     board
-        .map(|row| format!("| {} |", row.map(String::from).join(" | ")))
+        .map(|row| format!("| {} |", row.map(Into::<&str>::into).join(" | ")))
         .join("\n")
 }
 
@@ -212,13 +213,21 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
+    use std::convert;
+
     use super::*;
 
     #[test]
     fn can_convert_from_board_symbol_to_string() {
-        assert_eq!(String::from(BoardSymbol::Circle), "o");
-        assert_eq!(String::from(BoardSymbol::Plus), "+");
-        assert_eq!(String::from(BoardSymbol::Empty), "-");
+        let assertions = [
+            (BoardSymbol::Empty, "-"),
+            (BoardSymbol::Plus, "+"),
+            (BoardSymbol::Circle, "o"),
+        ];
+
+        for (value, expected) in assertions {
+            assert_eq!(convert::Into::<&str>::into(value), expected);
+        }
     }
 
     #[test]
