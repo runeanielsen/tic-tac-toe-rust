@@ -2,8 +2,9 @@
 
 use std::io;
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Default)]
 enum BoardSymbol {
+    #[default]
     Empty,
     Plus,
     Circle,
@@ -141,7 +142,7 @@ fn find_winner(board: [[BoardSymbol; 3]; 3]) -> Option<BoardSymbol> {
 
 fn start_game() {
     let mut player_turn = BoardSymbol::Plus;
-    let mut board = [[BoardSymbol::Empty; 3]; 3];
+    let mut board = [[BoardSymbol::default(); 3]; 3];
 
     loop {
         println!(
