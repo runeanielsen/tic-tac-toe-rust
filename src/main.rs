@@ -213,8 +213,6 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use std::convert;
-
     use super::*;
 
     #[test]
@@ -226,7 +224,7 @@ mod tests {
         ];
 
         for (value, expected) in assertions {
-            assert_eq!(convert::Into::<&str>::into(value), expected);
+            assert_eq!(expected, Into::<&str>::into(value));
         }
     }
 
