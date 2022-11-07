@@ -17,17 +17,19 @@ enum PlayerMoveError {
     OutsideBoard(String),
 }
 
-fn symbol_rep(symbol: BoardSymbol) -> String {
-    match symbol {
-        BoardSymbol::Empty => String::from("-"),
-        BoardSymbol::Plus => String::from("+"),
-        BoardSymbol::Circle => String::from("o"),
+impl From<BoardSymbol> for String {
+    fn from(val: BoardSymbol) -> Self {
+        match val {
+            BoardSymbol::Empty => String::from("-"),
+            BoardSymbol::Plus => String::from("+"),
+            BoardSymbol::Circle => String::from("o"),
+        }
     }
 }
 
 fn board_presentation(board: [[BoardSymbol; 3]; 3]) -> String {
     board
-        .map(|row| format!("| {} |", row.map(symbol_rep).join(" | ")))
+        .map(|row| format!("| {} |", row.map(String::from).join(" | ")))
         .join("\n")
 }
 
@@ -214,10 +216,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn symbol_rep_is_correct() {
-        assert_eq!(symbol_rep(BoardSymbol::Circle), "o");
-        assert_eq!(symbol_rep(BoardSymbol::Plus), "+");
-        assert_eq!(symbol_rep(BoardSymbol::Empty), "-");
+    fn can_convert_from_board_symbol_to_string() {
+        assert_eq!(String::from(BoardSymbol::Circle), "o");
+        assert_eq!(String::from(BoardSymbol::Plus), "+");
+        assert_eq!(String::from(BoardSymbol::Empty), "-");
     }
 
     #[test]
