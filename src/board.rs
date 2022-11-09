@@ -18,7 +18,6 @@ impl From<Symbol> for &str {
     }
 }
 
-#[derive(Clone)]
 pub struct Board(pub [[Symbol; 3]; 3]);
 
 impl Board {
