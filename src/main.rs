@@ -1,6 +1,7 @@
 #![warn(clippy::all, clippy::pedantic)]
 
 use std::convert::Into;
+use std::fmt::Display;
 use std::io;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -36,11 +37,15 @@ impl Board {
     }
 }
 
-fn board_presentation(board: &Board) -> String {
-    board
-        .0
-        .map(|row| format!("| {} |", row.map(Into::<&str>::into).join(" | ")))
-        .join("\n")
+impl Display for Board {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let board_representation = self
+            .0
+            .map(|row| format!("| {} |", row.map(Into::<&str>::into).join(" | ")))
+            .join("\n");
+
+        write!(f, "{}", board_representation)
+    }
 }
 
 fn parse_player_move(player_move: &str) -> Result<[usize; 2], PlayerMoveError> {
@@ -152,10 +157,7 @@ fn start_game() {
     let mut board = Board::new();
 
     loop {
-        println!(
-            "\nThe current board state is:\n\n{}\n",
-            board_presentation(&board)
-        );
+        println!("\nThe current board state is:\n\n{}\n", board);
 
         let player = match player_turn {
             BoardSymbol::Plus => "Player 1",
