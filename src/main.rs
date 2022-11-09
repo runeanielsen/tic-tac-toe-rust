@@ -4,7 +4,7 @@ mod board;
 
 use std::io;
 
-use board::{Representation, Board};
+use board::{Symbol, Board};
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum PlayerMoveError {
@@ -61,7 +61,7 @@ fn is_valid_move(
         )));
     }
 
-    if board.0[player_move[0]][player_move[1]] != Representation::Empty {
+    if board.0[player_move[0]][player_move[1]] != Symbol::Empty {
         return Err(PlayerMoveError::FilledPosition(String::from(
             "The position is already filled.",
         )));
@@ -70,13 +70,7 @@ fn is_valid_move(
     Ok(true)
 }
 
-fn place_on_board(symbol: Representation, player_move: [usize; 2], board: &Board) -> Board {
-    let mut board = board.clone();
-    board.0[player_move[0]][player_move[1]] = symbol;
-    board
-}
-
-fn find_winner(board: &Board) -> Option<Representation> {
+fn find_winner(board: &Board) -> Option<Symbol> {
     let board_state = board.0;
 
     // Check for row and column winner.
@@ -84,7 +78,7 @@ fn find_winner(board: &Board) -> Option<Representation> {
         // Row winner
         if board_state[i][0] == board_state[i][1] && board_state[i][0] == board_state[i][2] {
             // Empty cannot be a winner :)
-            if board_state[i][0] != Representation::Empty {
+            if board_state[i][0] != Symbol::Empty {
                 return Some(board_state[i][0]);
             }
         }
@@ -92,14 +86,14 @@ fn find_winner(board: &Board) -> Option<Representation> {
         // Colum winner
         if board_state[0][i] == board_state[1][i] && board_state[0][i] == board_state[2][i] {
             // Empty cannot be a winner :)
-            if board_state[0][i] != Representation::Empty {
+            if board_state[0][i] != Symbol::Empty {
                 return Some(board_state[0][i]);
             }
         }
     }
 
     // Left to right winner
-    if board_state[0][0] != Representation::Empty
+    if board_state[0][0] != Symbol::Empty
         && board_state[0][0] == board_state[1][1]
         && board_state[0][0] == board_state[2][2]
     {
@@ -107,7 +101,7 @@ fn find_winner(board: &Board) -> Option<Representation> {
     }
 
     // Right to left winner
-    if board_state[0][2] != Representation::Empty
+    if board_state[0][2] != Symbol::Empty
         && board_state[0][2] == board_state[1][1]
         && board_state[0][2] == board_state[2][0]
     {
@@ -118,16 +112,16 @@ fn find_winner(board: &Board) -> Option<Representation> {
 }
 
 fn start_game() {
-    let mut player_turn = Representation::Plus;
+    let mut player_turn = Symbol::Plus;
     let mut board = Board::new();
 
     loop {
         println!("\nThe current board state is:\n\n{}\n", board);
 
         let player = match player_turn {
-            Representation::Plus => "Player 1",
-            Representation::Circle => "Player 2",
-            Representation::Empty => {
+            Symbol::Plus => "Player 1",
+            Symbol::Circle => "Player 2",
+            Symbol::Empty => {
                 panic!("Empty is not a valid player turn. Something is not right.")
             }
         };
@@ -163,7 +157,7 @@ fn start_game() {
             },
         };
 
-        board = place_on_board(player_turn, player_move, &board);
+        board.place(player_turn, player_move);
 
         if find_winner(&board).is_some() {
             println!("The winner is: {}", player);
@@ -171,9 +165,9 @@ fn start_game() {
         }
 
         player_turn = match player_turn {
-            Representation::Plus => Representation::Circle,
-            Representation::Circle => Representation::Plus,
-            Representation::Empty => panic!("Invalid player turn."),
+            Symbol::Plus => Symbol::Circle,
+            Symbol::Circle => Symbol::Plus,
+            Symbol::Empty => panic!("Invalid player turn."),
         }
     }
 }
@@ -190,9 +184,9 @@ mod tests {
     #[test]
     fn can_convert_from_board_symbol_to_string() {
         let assertions = [
-            (Representation::Empty, "-"),
-            (Representation::Plus, "+"),
-            (Representation::Circle, "o"),
+            (Symbol::Empty, "-"),
+            (Symbol::Plus, "+"),
+            (Symbol::Circle, "o"),
         ];
 
         for (value, expected) in assertions {
@@ -231,21 +225,6 @@ mod tests {
     }
 
     #[test]
-    fn place_on_board_test() {
-        let mut board = Board([[Representation::Empty; 3]; 3]);
-        board = place_on_board(Representation::Plus, [1, 1], &board);
-
-        let mut expected = [[Representation::Empty; 3]; 3];
-        expected[1][1] = Representation::Plus;
-
-        (0..board.0.len()).for_each(|i| {
-            for j in 0..board.0[i].len() {
-                assert_eq!(board.0[i][j], expected[i][j]);
-            }
-        });
-    }
-
-    #[test]
     fn valid_player_move_empty_board() {
         let board = Board::new();
         let valid_moves = [
@@ -268,8 +247,8 @@ mod tests {
     #[test]
     fn valid_player_move_symbols_on_board() {
         let mut board = Board::new();
-        board.0[1][1] = Representation::Plus;
-        board.0[2][2] = Representation::Circle;
+        board.0[1][1] = Symbol::Plus;
+        board.0[2][2] = Symbol::Circle;
 
         let valid_moves = [[0, 0], [0, 1], [0, 2], [1, 0], [1, 2], [2, 0], [2, 1]];
 
@@ -281,7 +260,7 @@ mod tests {
     #[test]
     fn invalid_player_move_already_filled_slot() {
         let mut board = Board::new();
-        board.0[1][1] = Representation::Plus;
+        board.0[1][1] = Symbol::Plus;
 
         assert_eq!(
             is_valid_move([1, 1], &board),
@@ -309,74 +288,74 @@ mod tests {
 
     #[test]
     fn find_winner_row_winner_test() {
-        let mut first_row_filled = Board([[Representation::Empty; 3]; 3]);
-        first_row_filled.0[0][0] = Representation::Circle;
-        first_row_filled.0[0][1] = Representation::Circle;
-        first_row_filled.0[0][2] = Representation::Circle;
+        let mut first_row_filled = Board([[Symbol::Empty; 3]; 3]);
+        first_row_filled.0[0][0] = Symbol::Circle;
+        first_row_filled.0[0][1] = Symbol::Circle;
+        first_row_filled.0[0][2] = Symbol::Circle;
 
-        let mut second_row_filled = Board([[Representation::Empty; 3]; 3]);
-        second_row_filled.0[1][0] = Representation::Plus;
-        second_row_filled.0[1][1] = Representation::Plus;
-        second_row_filled.0[1][2] = Representation::Plus;
+        let mut second_row_filled = Board([[Symbol::Empty; 3]; 3]);
+        second_row_filled.0[1][0] = Symbol::Plus;
+        second_row_filled.0[1][1] = Symbol::Plus;
+        second_row_filled.0[1][2] = Symbol::Plus;
 
-        let mut third_row_filled = Board([[Representation::Empty; 3]; 3]);
-        third_row_filled.0[2][0] = Representation::Plus;
-        third_row_filled.0[2][1] = Representation::Plus;
-        third_row_filled.0[2][2] = Representation::Plus;
+        let mut third_row_filled = Board([[Symbol::Empty; 3]; 3]);
+        third_row_filled.0[2][0] = Symbol::Plus;
+        third_row_filled.0[2][1] = Symbol::Plus;
+        third_row_filled.0[2][2] = Symbol::Plus;
 
-        assert_eq!(find_winner(&first_row_filled).unwrap(), Representation::Circle);
-        assert_eq!(find_winner(&second_row_filled).unwrap(), Representation::Plus);
-        assert_eq!(find_winner(&third_row_filled).unwrap(), Representation::Plus);
+        assert_eq!(find_winner(&first_row_filled).unwrap(), Symbol::Circle);
+        assert_eq!(find_winner(&second_row_filled).unwrap(), Symbol::Plus);
+        assert_eq!(find_winner(&third_row_filled).unwrap(), Symbol::Plus);
     }
 
     #[test]
     fn find_column_winner() {
         let mut first_column_filled = Board::new();
-        first_column_filled.0[0][0] = Representation::Circle;
-        first_column_filled.0[1][0] = Representation::Circle;
-        first_column_filled.0[2][0] = Representation::Circle;
+        first_column_filled.0[0][0] = Symbol::Circle;
+        first_column_filled.0[1][0] = Symbol::Circle;
+        first_column_filled.0[2][0] = Symbol::Circle;
 
         let mut second_column_filled = Board::new();
-        second_column_filled.0[0][1] = Representation::Plus;
-        second_column_filled.0[1][1] = Representation::Plus;
-        second_column_filled.0[2][1] = Representation::Plus;
+        second_column_filled.0[0][1] = Symbol::Plus;
+        second_column_filled.0[1][1] = Symbol::Plus;
+        second_column_filled.0[2][1] = Symbol::Plus;
 
         let mut third_column_filled = Board::new();
-        third_column_filled.0[0][2] = Representation::Circle;
-        third_column_filled.0[1][2] = Representation::Circle;
-        third_column_filled.0[2][2] = Representation::Circle;
+        third_column_filled.0[0][2] = Symbol::Circle;
+        third_column_filled.0[1][2] = Symbol::Circle;
+        third_column_filled.0[2][2] = Symbol::Circle;
 
         assert_eq!(
             find_winner(&first_column_filled).unwrap(),
-            Representation::Circle
+            Symbol::Circle
         );
         assert_eq!(
             find_winner(&second_column_filled).unwrap(),
-            Representation::Plus
+            Symbol::Plus
         );
         assert_eq!(
             find_winner(&third_column_filled).unwrap(),
-            Representation::Circle
+            Symbol::Circle
         );
     }
 
     #[test]
     fn find_winner_left_to_right() {
         let mut board = Board::new();
-        board.0[0][0] = Representation::Circle;
-        board.0[1][1] = Representation::Circle;
-        board.0[2][2] = Representation::Circle;
+        board.0[0][0] = Symbol::Circle;
+        board.0[1][1] = Symbol::Circle;
+        board.0[2][2] = Symbol::Circle;
 
-        assert_eq!(find_winner(&board).unwrap(), Representation::Circle);
+        assert_eq!(find_winner(&board).unwrap(), Symbol::Circle);
     }
 
     #[test]
     fn find_winner_right_to_left() {
         let mut board = Board::new();
-        board.0[0][2] = Representation::Plus;
-        board.0[1][1] = Representation::Plus;
-        board.0[2][0] = Representation::Plus;
+        board.0[0][2] = Symbol::Plus;
+        board.0[1][1] = Symbol::Plus;
+        board.0[2][0] = Symbol::Plus;
 
-        assert_eq!(find_winner(&board).unwrap(), Representation::Plus);
+        assert_eq!(find_winner(&board).unwrap(), Symbol::Plus);
     }
 }

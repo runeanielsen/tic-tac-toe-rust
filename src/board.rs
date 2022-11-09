@@ -2,28 +2,32 @@ use std::convert::Into;
 use std::fmt::Display;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum Representation {
+pub enum Symbol {
     Empty,
     Plus,
     Circle,
 }
 
-impl From<Representation> for &str {
-    fn from(val: Representation) -> Self {
+impl From<Symbol> for &str {
+    fn from(val: Symbol) -> Self {
         match val {
-            Representation::Empty => "-",
-            Representation::Plus => "+",
-            Representation::Circle => "o",
+            Symbol::Empty => "-",
+            Symbol::Plus => "+",
+            Symbol::Circle => "o",
         }
     }
 }
 
 #[derive(Clone)]
-pub struct Board(pub [[Representation; 3]; 3]);
+pub struct Board(pub [[Symbol; 3]; 3]);
 
 impl Board {
     pub fn new() -> Board {
-        Board([[Representation::Empty; 3]; 3])
+        Board([[Symbol::Empty; 3]; 3])
+    }
+
+    pub fn place(&mut self, symbol: Symbol, player_move: [usize; 2]) {
+        self.0[player_move[0]][player_move[1]] = symbol;
     }
 }
 
@@ -36,4 +40,19 @@ impl Display for Board {
 
         write!(f, "{}", board_representation)
     }
+}
+
+#[test]
+fn should_be_able_to_place_a_symbol_on_the_board() {
+    let mut board = Board::new();
+    board.place(Symbol::Plus, [1, 1]);
+
+    let mut expected = [[Symbol::Empty; 3]; 3];
+    expected[1][1] = Symbol::Plus;
+
+    (0..board.0.len()).for_each(|i| {
+        for j in 0..board.0[i].len() {
+            assert_eq!(board.0[i][j], expected[i][j]);
+        }
+    });
 }
