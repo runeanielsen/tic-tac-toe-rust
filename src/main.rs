@@ -8,23 +8,27 @@ use board::{Board, Symbol};
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum PlayerMoveError {
-    InvalidFormat(String),
     FilledPosition(String),
     OutsideBoard(String),
 }
 
-fn parse_player_move(player_move: &str) -> Result<[usize; 2], PlayerMoveError> {
+#[derive(Debug, PartialEq, Eq)]
+pub enum PlayerInputParseError {
+    InvalidFormat(String),
+}
+
+fn parse_player_move(player_move: &str) -> Result<[usize; 2], PlayerInputParseError> {
     let positions = player_move.split(',').map(str::trim).collect::<Vec<_>>();
 
     if positions.len() != 2 {
-        return Err(PlayerMoveError::InvalidFormat(String::from(
+        return Err(PlayerInputParseError::InvalidFormat(String::from(
             "Invalid format",
         )));
     }
 
     for position in &positions {
         if position.len() != 1 {
-            return Err(PlayerMoveError::InvalidFormat(String::from(
+            return Err(PlayerInputParseError::InvalidFormat(String::from(
                 "Invalid format",
             )));
         }
@@ -33,7 +37,7 @@ fn parse_player_move(player_move: &str) -> Result<[usize; 2], PlayerMoveError> {
     let x = match positions[0].chars().next().unwrap().to_digit(10) {
         Some(n) => n,
         None => {
-            return Err(PlayerMoveError::InvalidFormat(String::from(
+            return Err(PlayerInputParseError::InvalidFormat(String::from(
                 "Invalid format",
             )))
         }
@@ -42,7 +46,7 @@ fn parse_player_move(player_move: &str) -> Result<[usize; 2], PlayerMoveError> {
     let y = match positions[1].chars().next().unwrap().to_digit(10) {
         Some(n) => n,
         None => {
-            return Err(PlayerMoveError::InvalidFormat(String::from(
+            return Err(PlayerInputParseError::InvalidFormat(String::from(
                 "Invalid format.",
             )))
         }
@@ -133,11 +137,10 @@ fn start_game() {
         let player_move = match parse_player_move(&player_input) {
             Ok(parsed_move) => parsed_move,
             Err(error) => match error {
-                PlayerMoveError::InvalidFormat(x) => {
+                PlayerInputParseError::InvalidFormat(x) => {
                     eprintln!("{} {} please try again!", x, player);
                     continue;
                 }
-                _ => panic!("Unhandled error."),
             },
         };
 
@@ -147,9 +150,6 @@ fn start_game() {
                 PlayerMoveError::FilledPosition(msg) | PlayerMoveError::OutsideBoard(msg) => {
                     eprintln!("{} {} please try again!", msg, player);
                     continue;
-                }
-                PlayerMoveError::InvalidFormat(_) => {
-                    panic!("Invalid format.")
                 }
             },
         };
@@ -216,7 +216,7 @@ mod tests {
         for invalid_move in invalid_moves {
             assert_eq!(
                 parse_player_move(invalid_move),
-                Err(PlayerMoveError::InvalidFormat("Invalid format".to_string()))
+                Err(PlayerInputParseError::InvalidFormat("Invalid format".to_string()))
             );
         }
     }
