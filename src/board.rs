@@ -41,17 +41,22 @@ impl Display for Board {
     }
 }
 
-#[test]
-fn should_be_able_to_place_a_symbol_on_the_board() {
-    let mut board = Board::new();
-    board.place(Symbol::Plus, [1, 1]);
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    let mut expected = [[Symbol::Empty; 3]; 3];
-    expected[1][1] = Symbol::Plus;
+    #[test]
+    fn should_be_able_to_place_a_symbol_on_the_board() {
+        let mut board = Board::new();
+        board.place(Symbol::Plus, [1, 1]);
 
-    (0..board.0.len()).for_each(|i| {
-        for j in 0..board.0[i].len() {
-            assert_eq!(board.0[i][j], expected[i][j]);
-        }
-    });
+        let mut expected = [[Symbol::Empty; 3]; 3];
+        expected[1][1] = Symbol::Plus;
+
+        (0..board.0.len()).for_each(|i| {
+            for j in 0..board.0[i].len() {
+                assert_eq!(board.0[i][j], expected[i][j]);
+            }
+        });
+    }
 }
