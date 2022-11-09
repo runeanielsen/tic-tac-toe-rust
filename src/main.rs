@@ -4,7 +4,7 @@ mod board;
 
 use std::io;
 
-use board::{Symbol, Board};
+use board::{Board, Symbol};
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum PlayerMoveError {
@@ -51,10 +51,7 @@ fn parse_player_move(player_move: &str) -> Result<[usize; 2], PlayerMoveError> {
     Ok([x.try_into().unwrap(), y.try_into().unwrap()])
 }
 
-fn is_valid_move(
-    player_move: [usize; 2],
-    board: &Board,
-) -> Result<bool, PlayerMoveError> {
+fn is_valid_move(player_move: [usize; 2], board: &Board) -> Result<bool, PlayerMoveError> {
     if player_move[0] > 2 || player_move[1] > 2 {
         return Err(PlayerMoveError::OutsideBoard(String::from(
             "The move is invalid because it is outside the board.",
@@ -288,17 +285,17 @@ mod tests {
 
     #[test]
     fn find_winner_row_winner_test() {
-        let mut first_row_filled = Board([[Symbol::Empty; 3]; 3]);
+        let mut first_row_filled = Board::new();
         first_row_filled.0[0][0] = Symbol::Circle;
         first_row_filled.0[0][1] = Symbol::Circle;
         first_row_filled.0[0][2] = Symbol::Circle;
 
-        let mut second_row_filled = Board([[Symbol::Empty; 3]; 3]);
+        let mut second_row_filled = Board::new();
         second_row_filled.0[1][0] = Symbol::Plus;
         second_row_filled.0[1][1] = Symbol::Plus;
         second_row_filled.0[1][2] = Symbol::Plus;
 
-        let mut third_row_filled = Board([[Symbol::Empty; 3]; 3]);
+        let mut third_row_filled = Board::new();
         third_row_filled.0[2][0] = Symbol::Plus;
         third_row_filled.0[2][1] = Symbol::Plus;
         third_row_filled.0[2][2] = Symbol::Plus;
@@ -325,18 +322,9 @@ mod tests {
         third_column_filled.0[1][2] = Symbol::Circle;
         third_column_filled.0[2][2] = Symbol::Circle;
 
-        assert_eq!(
-            find_winner(&first_column_filled).unwrap(),
-            Symbol::Circle
-        );
-        assert_eq!(
-            find_winner(&second_column_filled).unwrap(),
-            Symbol::Plus
-        );
-        assert_eq!(
-            find_winner(&third_column_filled).unwrap(),
-            Symbol::Circle
-        );
+        assert_eq!(find_winner(&first_column_filled).unwrap(), Symbol::Circle);
+        assert_eq!(find_winner(&second_column_filled).unwrap(), Symbol::Plus);
+        assert_eq!(find_winner(&third_column_filled).unwrap(), Symbol::Circle);
     }
 
     #[test]
