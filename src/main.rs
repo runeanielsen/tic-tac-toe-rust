@@ -51,47 +51,6 @@ fn parse_player_move(player_move: &str) -> Result<[usize; 2], PlayerInputParseEr
     Ok([x.try_into().unwrap(), y.try_into().unwrap()])
 }
 
-fn find_winner(board: &Board) -> Option<Symbol> {
-    let board_state = board.0;
-
-    // Check for row and column winner.
-    for i in 0..board_state.len() {
-        // Row winner
-        if board_state[i][0] == board_state[i][1] && board_state[i][0] == board_state[i][2] {
-            // Empty cannot be a winner :)
-            if board_state[i][0] != Symbol::Empty {
-                return Some(board_state[i][0]);
-            }
-        }
-
-        // Colum winner
-        if board_state[0][i] == board_state[1][i] && board_state[0][i] == board_state[2][i] {
-            // Empty cannot be a winner :)
-            if board_state[0][i] != Symbol::Empty {
-                return Some(board_state[0][i]);
-            }
-        }
-    }
-
-    // Left to right winner
-    if board_state[0][0] != Symbol::Empty
-        && board_state[0][0] == board_state[1][1]
-        && board_state[0][0] == board_state[2][2]
-    {
-        return Some(board_state[0][0]);
-    }
-
-    // Right to left winner
-    if board_state[0][2] != Symbol::Empty
-        && board_state[0][2] == board_state[1][1]
-        && board_state[0][2] == board_state[2][0]
-    {
-        return Some(board_state[0][2]);
-    }
-
-    None
-}
-
 fn start_game() {
     let mut player_turn = Symbol::Plus;
     let mut board = Board::new();
@@ -136,7 +95,7 @@ fn start_game() {
 
         board.place(player_turn, player_move);
 
-        if find_winner(&board).is_some() {
+        if board.winner().is_some() {
             println!("The winner is: {}", player);
             break;
         }
@@ -157,19 +116,6 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn can_convert_from_board_symbol_to_string() {
-        let assertions = [
-            (Symbol::Empty, "-"),
-            (Symbol::Plus, "+"),
-            (Symbol::Circle, "o"),
-        ];
-
-        for (value, expected) in assertions {
-            assert_eq!(expected, Into::<&str>::into(value));
-        }
-    }
 
     #[test]
     fn valid_player_moves_test() {
@@ -196,72 +142,10 @@ mod tests {
         for invalid_move in invalid_moves {
             assert_eq!(
                 parse_player_move(invalid_move),
-                Err(PlayerInputParseError::InvalidFormat("Invalid format".to_string()))
+                Err(PlayerInputParseError::InvalidFormat(
+                    "Invalid format".to_string()
+                ))
             );
         }
-    }
-
-    #[test]
-    fn find_winner_row_winner_test() {
-        let mut first_row_filled = Board::new();
-        first_row_filled.0[0][0] = Symbol::Circle;
-        first_row_filled.0[0][1] = Symbol::Circle;
-        first_row_filled.0[0][2] = Symbol::Circle;
-
-        let mut second_row_filled = Board::new();
-        second_row_filled.0[1][0] = Symbol::Plus;
-        second_row_filled.0[1][1] = Symbol::Plus;
-        second_row_filled.0[1][2] = Symbol::Plus;
-
-        let mut third_row_filled = Board::new();
-        third_row_filled.0[2][0] = Symbol::Plus;
-        third_row_filled.0[2][1] = Symbol::Plus;
-        third_row_filled.0[2][2] = Symbol::Plus;
-
-        assert_eq!(find_winner(&first_row_filled).unwrap(), Symbol::Circle);
-        assert_eq!(find_winner(&second_row_filled).unwrap(), Symbol::Plus);
-        assert_eq!(find_winner(&third_row_filled).unwrap(), Symbol::Plus);
-    }
-
-    #[test]
-    fn find_column_winner() {
-        let mut first_column_filled = Board::new();
-        first_column_filled.0[0][0] = Symbol::Circle;
-        first_column_filled.0[1][0] = Symbol::Circle;
-        first_column_filled.0[2][0] = Symbol::Circle;
-
-        let mut second_column_filled = Board::new();
-        second_column_filled.0[0][1] = Symbol::Plus;
-        second_column_filled.0[1][1] = Symbol::Plus;
-        second_column_filled.0[2][1] = Symbol::Plus;
-
-        let mut third_column_filled = Board::new();
-        third_column_filled.0[0][2] = Symbol::Circle;
-        third_column_filled.0[1][2] = Symbol::Circle;
-        third_column_filled.0[2][2] = Symbol::Circle;
-
-        assert_eq!(find_winner(&first_column_filled).unwrap(), Symbol::Circle);
-        assert_eq!(find_winner(&second_column_filled).unwrap(), Symbol::Plus);
-        assert_eq!(find_winner(&third_column_filled).unwrap(), Symbol::Circle);
-    }
-
-    #[test]
-    fn find_winner_left_to_right() {
-        let mut board = Board::new();
-        board.0[0][0] = Symbol::Circle;
-        board.0[1][1] = Symbol::Circle;
-        board.0[2][2] = Symbol::Circle;
-
-        assert_eq!(find_winner(&board).unwrap(), Symbol::Circle);
-    }
-
-    #[test]
-    fn find_winner_right_to_left() {
-        let mut board = Board::new();
-        board.0[0][2] = Symbol::Plus;
-        board.0[1][1] = Symbol::Plus;
-        board.0[2][0] = Symbol::Plus;
-
-        assert_eq!(find_winner(&board).unwrap(), Symbol::Plus);
     }
 }

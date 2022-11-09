@@ -50,6 +50,47 @@ impl Board {
 
         Ok(true)
     }
+
+    pub fn winner(&self) -> Option<Symbol> {
+        let board_state = self.0;
+
+        // Check for row and column winner.
+        for i in 0..board_state.len() {
+            // Row winner
+            if board_state[i][0] == board_state[i][1] && board_state[i][0] == board_state[i][2] {
+                // Empty cannot be a winner :)
+                if board_state[i][0] != Symbol::Empty {
+                    return Some(board_state[i][0]);
+                }
+            }
+
+            // Colum winner
+            if board_state[0][i] == board_state[1][i] && board_state[0][i] == board_state[2][i] {
+                // Empty cannot be a winner :)
+                if board_state[0][i] != Symbol::Empty {
+                    return Some(board_state[0][i]);
+                }
+            }
+        }
+
+        // Left to right winner
+        if board_state[0][0] != Symbol::Empty
+            && board_state[0][0] == board_state[1][1]
+            && board_state[0][0] == board_state[2][2]
+        {
+            return Some(board_state[0][0]);
+        }
+
+        // Right to left winner
+        if board_state[0][2] != Symbol::Empty
+            && board_state[0][2] == board_state[1][1]
+            && board_state[0][2] == board_state[2][0]
+        {
+            return Some(board_state[0][2]);
+        }
+
+        None
+    }
 }
 
 impl Display for Board {
@@ -141,6 +182,83 @@ mod tests {
                     "The move is invalid because it is outside the board.".to_string()
                 ))
             );
+        }
+    }
+
+    #[test]
+    fn find_winner_row_winner_test() {
+        let mut first_row_filled = Board::new();
+        first_row_filled.0[0][0] = Symbol::Circle;
+        first_row_filled.0[0][1] = Symbol::Circle;
+        first_row_filled.0[0][2] = Symbol::Circle;
+
+        let mut second_row_filled = Board::new();
+        second_row_filled.0[1][0] = Symbol::Plus;
+        second_row_filled.0[1][1] = Symbol::Plus;
+        second_row_filled.0[1][2] = Symbol::Plus;
+
+        let mut third_row_filled = Board::new();
+        third_row_filled.0[2][0] = Symbol::Plus;
+        third_row_filled.0[2][1] = Symbol::Plus;
+        third_row_filled.0[2][2] = Symbol::Plus;
+
+        assert_eq!(first_row_filled.winner().unwrap(), Symbol::Circle);
+        assert_eq!(second_row_filled.winner().unwrap(), Symbol::Plus);
+        assert_eq!(third_row_filled.winner().unwrap(), Symbol::Plus);
+    }
+
+    #[test]
+    fn find_column_winner() {
+        let mut first_column_filled = Board::new();
+        first_column_filled.0[0][0] = Symbol::Circle;
+        first_column_filled.0[1][0] = Symbol::Circle;
+        first_column_filled.0[2][0] = Symbol::Circle;
+
+        let mut second_column_filled = Board::new();
+        second_column_filled.0[0][1] = Symbol::Plus;
+        second_column_filled.0[1][1] = Symbol::Plus;
+        second_column_filled.0[2][1] = Symbol::Plus;
+
+        let mut third_column_filled = Board::new();
+        third_column_filled.0[0][2] = Symbol::Circle;
+        third_column_filled.0[1][2] = Symbol::Circle;
+        third_column_filled.0[2][2] = Symbol::Circle;
+
+        assert_eq!(first_column_filled.winner().unwrap(), Symbol::Circle);
+        assert_eq!(second_column_filled.winner().unwrap(), Symbol::Plus);
+        assert_eq!(third_column_filled.winner().unwrap(), Symbol::Circle);
+    }
+
+    #[test]
+    fn find_winner_left_to_right() {
+        let mut board = Board::new();
+        board.0[0][0] = Symbol::Circle;
+        board.0[1][1] = Symbol::Circle;
+        board.0[2][2] = Symbol::Circle;
+
+        assert_eq!(board.winner().unwrap(), Symbol::Circle);
+    }
+
+    #[test]
+    fn find_winner_right_to_left() {
+        let mut board = Board::new();
+        board.0[0][2] = Symbol::Plus;
+        board.0[1][1] = Symbol::Plus;
+        board.0[2][0] = Symbol::Plus;
+
+        assert_eq!(board.winner().unwrap(), Symbol::Plus);
+    }
+
+    #[test]
+    fn can_convert_from_board_symbol_to_string() {
+        let assertions = [
+            (Symbol::Empty, "-"),
+            (Symbol::Plus, "+"),
+            (Symbol::Circle, "o"),
+        ];
+
+        for (value, expected) in assertions {
+            assert_eq!(expected, Into::<&str>::into(value));
         }
     }
 }
