@@ -2,30 +2,58 @@
 
 mod board;
 
-use std::io;
+use std::{fmt::Display, io};
 
 use board::{Board, Symbol};
 
 use crate::board::PlayerMoveError;
 
 #[derive(Debug, PartialEq, Eq)]
-pub enum PlayerInputParseError {
+enum PlayerInputParseError {
     InvalidFormat(String),
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+enum Player {
+    One,
+    Two,
+}
+
+impl Display for Player {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let alias = match self {
+            Player::One => "Player 1",
+            Player::Two => "Player 2",
+        };
+
+        write!(f, "{}", alias)
+    }
+}
+
+impl From<Player> for Symbol {
+    fn from(val: Player) -> Self {
+        match val {
+            Player::One => Symbol::Plus,
+            Player::Two => Symbol::Circle,
+        }
+    }
 }
 
 fn parse_player_move(player_move: &str) -> Result<[usize; 2], PlayerInputParseError> {
     let positions = player_move.split(',').map(str::trim).collect::<Vec<_>>();
 
+    let invalid_format_error_message = "Invalid format";
+
     if positions.len() != 2 {
         return Err(PlayerInputParseError::InvalidFormat(String::from(
-            "Invalid format",
+            invalid_format_error_message,
         )));
     }
 
     for position in &positions {
         if position.len() != 1 {
             return Err(PlayerInputParseError::InvalidFormat(String::from(
-                "Invalid format",
+                invalid_format_error_message,
             )));
         }
     }
@@ -34,7 +62,7 @@ fn parse_player_move(player_move: &str) -> Result<[usize; 2], PlayerInputParseEr
         Some(n) => n,
         None => {
             return Err(PlayerInputParseError::InvalidFormat(String::from(
-                "Invalid format",
+                invalid_format_error_message,
             )))
         }
     };
@@ -43,7 +71,7 @@ fn parse_player_move(player_move: &str) -> Result<[usize; 2], PlayerInputParseEr
         Some(n) => n,
         None => {
             return Err(PlayerInputParseError::InvalidFormat(String::from(
-                "Invalid format.",
+                invalid_format_error_message,
             )))
         }
     };
@@ -52,21 +80,13 @@ fn parse_player_move(player_move: &str) -> Result<[usize; 2], PlayerInputParseEr
 }
 
 fn start_game() {
-    let mut player_turn = Symbol::Plus;
+    let mut player_turn = Player::One;
     let mut board = Board::new();
 
     loop {
         println!("\nThe current board state is:\n\n{}\n", board);
 
-        let player = match player_turn {
-            Symbol::Plus => "Player 1",
-            Symbol::Circle => "Player 2",
-            Symbol::Empty => {
-                panic!("Empty is not a valid player turn. Something is not right.")
-            }
-        };
-
-        println!("{}, please do your move.", player);
+        println!("{}, please do your move.", player_turn);
 
         let mut player_input = String::new();
         io::stdin()
@@ -77,7 +97,7 @@ fn start_game() {
             Ok(parsed_move) => parsed_move,
             Err(error) => match error {
                 PlayerInputParseError::InvalidFormat(x) => {
-                    eprintln!("{} {} please try again!", x, player);
+                    eprintln!("{} {} please try again!", x, player_turn);
                     continue;
                 }
             },
@@ -87,23 +107,22 @@ fn start_game() {
             Ok(_) => {}
             Err(err) => match err {
                 PlayerMoveError::FilledPosition(msg) | PlayerMoveError::OutsideBoard(msg) => {
-                    eprintln!("{} {} please try again!", msg, player);
+                    eprintln!("{} {} please try again!", msg, player_turn);
                     continue;
                 }
             },
         };
 
-        board.place(player_turn, player_move);
+        board.place(player_turn.into(), player_move);
 
         if board.winner().is_some() {
-            println!("The winner is: {}", player);
+            println!("The winner is: {}", player_turn);
             break;
         }
 
         player_turn = match player_turn {
-            Symbol::Plus => Symbol::Circle,
-            Symbol::Circle => Symbol::Plus,
-            Symbol::Empty => panic!("Invalid player turn."),
+            Player::One => Player::Two,
+            Player::Two => Player::One,
         }
     }
 }
@@ -147,5 +166,11 @@ mod tests {
                 ))
             );
         }
+    }
+
+    #[test]
+    fn player_alias_for_shoutout_test() {
+        assert_eq!("Player 1", format!("{}", Player::One));
+        assert_eq!("Player 2", format!("{}", Player::Two));
     }
 }
