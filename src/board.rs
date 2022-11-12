@@ -24,15 +24,19 @@ impl From<Symbol> for &str {
     }
 }
 
-pub struct Board(pub [[Symbol; 3]; 3]);
+pub struct Board {
+    pub tiles: [[Symbol; 3]; 3],
+}
 
 impl Board {
     pub fn new() -> Board {
-        Board([[Symbol::Empty; 3]; 3])
+        Board {
+            tiles: [[Symbol::Empty; 3]; 3],
+        }
     }
 
     pub fn place(&mut self, symbol: Symbol, player_move: [usize; 2]) {
-        self.0[player_move[0]][player_move[1]] = symbol;
+        self.tiles[player_move[0]][player_move[1]] = symbol;
     }
 
     pub fn is_valid_move(&self, player_move: [usize; 2]) -> Result<bool, PlayerMoveError> {
@@ -42,7 +46,7 @@ impl Board {
             )));
         }
 
-        if self.0[player_move[0]][player_move[1]] != Symbol::Empty {
+        if self.tiles[player_move[0]][player_move[1]] != Symbol::Empty {
             return Err(PlayerMoveError::FilledPosition(String::from(
                 "The position is already filled.",
             )));
@@ -52,7 +56,7 @@ impl Board {
     }
 
     pub fn winner(&self) -> Option<Symbol> {
-        let board_state = self.0;
+        let board_state = self.tiles;
 
         // Check for row and column winner.
         for i in 0..board_state.len() {
@@ -96,7 +100,7 @@ impl Board {
 impl Display for Board {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let board_representation = self
-            .0
+            .tiles
             .map(|row| format!("| {} |", row.map(Into::<&str>::into).join(" | ")))
             .join("\n");
 
@@ -116,9 +120,9 @@ mod tests {
         let mut expected = [[Symbol::Empty; 3]; 3];
         expected[1][1] = Symbol::Plus;
 
-        (0..board.0.len()).for_each(|i| {
-            for j in 0..board.0[i].len() {
-                assert_eq!(board.0[i][j], expected[i][j]);
+        (0..board.tiles.len()).for_each(|i| {
+            for j in 0..board.tiles[i].len() {
+                assert_eq!(board.tiles[i][j], expected[i][j]);
             }
         });
     }
@@ -146,8 +150,8 @@ mod tests {
     #[test]
     fn valid_player_move_symbols_on_board() {
         let mut board = Board::new();
-        board.0[1][1] = Symbol::Plus;
-        board.0[2][2] = Symbol::Circle;
+        board.tiles[1][1] = Symbol::Plus;
+        board.tiles[2][2] = Symbol::Circle;
 
         let valid_moves = [[0, 0], [0, 1], [0, 2], [1, 0], [1, 2], [2, 0], [2, 1]];
 
@@ -159,7 +163,7 @@ mod tests {
     #[test]
     fn invalid_player_move_already_filled_slot() {
         let mut board = Board::new();
-        board.0[1][1] = Symbol::Plus;
+        board.tiles[1][1] = Symbol::Plus;
 
         assert_eq!(
             board.is_valid_move([1, 1]),
@@ -188,19 +192,19 @@ mod tests {
     #[test]
     fn find_winner_row_winner_test() {
         let mut first_row_filled = Board::new();
-        first_row_filled.0[0][0] = Symbol::Circle;
-        first_row_filled.0[0][1] = Symbol::Circle;
-        first_row_filled.0[0][2] = Symbol::Circle;
+        first_row_filled.tiles[0][0] = Symbol::Circle;
+        first_row_filled.tiles[0][1] = Symbol::Circle;
+        first_row_filled.tiles[0][2] = Symbol::Circle;
 
         let mut second_row_filled = Board::new();
-        second_row_filled.0[1][0] = Symbol::Plus;
-        second_row_filled.0[1][1] = Symbol::Plus;
-        second_row_filled.0[1][2] = Symbol::Plus;
+        second_row_filled.tiles[1][0] = Symbol::Plus;
+        second_row_filled.tiles[1][1] = Symbol::Plus;
+        second_row_filled.tiles[1][2] = Symbol::Plus;
 
         let mut third_row_filled = Board::new();
-        third_row_filled.0[2][0] = Symbol::Plus;
-        third_row_filled.0[2][1] = Symbol::Plus;
-        third_row_filled.0[2][2] = Symbol::Plus;
+        third_row_filled.tiles[2][0] = Symbol::Plus;
+        third_row_filled.tiles[2][1] = Symbol::Plus;
+        third_row_filled.tiles[2][2] = Symbol::Plus;
 
         assert_eq!(first_row_filled.winner().unwrap(), Symbol::Circle);
         assert_eq!(second_row_filled.winner().unwrap(), Symbol::Plus);
@@ -210,19 +214,19 @@ mod tests {
     #[test]
     fn find_column_winner() {
         let mut first_column_filled = Board::new();
-        first_column_filled.0[0][0] = Symbol::Circle;
-        first_column_filled.0[1][0] = Symbol::Circle;
-        first_column_filled.0[2][0] = Symbol::Circle;
+        first_column_filled.tiles[0][0] = Symbol::Circle;
+        first_column_filled.tiles[1][0] = Symbol::Circle;
+        first_column_filled.tiles[2][0] = Symbol::Circle;
 
         let mut second_column_filled = Board::new();
-        second_column_filled.0[0][1] = Symbol::Plus;
-        second_column_filled.0[1][1] = Symbol::Plus;
-        second_column_filled.0[2][1] = Symbol::Plus;
+        second_column_filled.tiles[0][1] = Symbol::Plus;
+        second_column_filled.tiles[1][1] = Symbol::Plus;
+        second_column_filled.tiles[2][1] = Symbol::Plus;
 
         let mut third_column_filled = Board::new();
-        third_column_filled.0[0][2] = Symbol::Circle;
-        third_column_filled.0[1][2] = Symbol::Circle;
-        third_column_filled.0[2][2] = Symbol::Circle;
+        third_column_filled.tiles[0][2] = Symbol::Circle;
+        third_column_filled.tiles[1][2] = Symbol::Circle;
+        third_column_filled.tiles[2][2] = Symbol::Circle;
 
         assert_eq!(first_column_filled.winner().unwrap(), Symbol::Circle);
         assert_eq!(second_column_filled.winner().unwrap(), Symbol::Plus);
@@ -232,9 +236,9 @@ mod tests {
     #[test]
     fn find_winner_left_to_right() {
         let mut board = Board::new();
-        board.0[0][0] = Symbol::Circle;
-        board.0[1][1] = Symbol::Circle;
-        board.0[2][2] = Symbol::Circle;
+        board.tiles[0][0] = Symbol::Circle;
+        board.tiles[1][1] = Symbol::Circle;
+        board.tiles[2][2] = Symbol::Circle;
 
         assert_eq!(board.winner().unwrap(), Symbol::Circle);
     }
@@ -242,9 +246,9 @@ mod tests {
     #[test]
     fn find_winner_right_to_left() {
         let mut board = Board::new();
-        board.0[0][2] = Symbol::Plus;
-        board.0[1][1] = Symbol::Plus;
-        board.0[2][0] = Symbol::Plus;
+        board.tiles[0][2] = Symbol::Plus;
+        board.tiles[1][1] = Symbol::Plus;
+        board.tiles[2][0] = Symbol::Plus;
 
         assert_eq!(board.winner().unwrap(), Symbol::Plus);
     }
